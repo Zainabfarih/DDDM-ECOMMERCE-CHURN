@@ -1,1 +1,12 @@
-pip install numpy pandas scikit-learn xgboost shap matplotlib seaborn plotly streamlit scipy jupyter openpyxl
+numpy
+pandas
+scikit-learn
+xgboost
+shap
+matplotlib
+seaborn
+plotly
+streamlit
+scipy
+jupyter
+openpyxl
