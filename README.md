@@ -15,6 +15,8 @@ site e-commerce et orienter les actions de rétention.
 - [Installation](#installation)
 - [Phase 1 — Définition du problème & KPIs](#phase-1--définition-du-problème--kpis)
 - [Phase 2 — Collecte & audit des données](#phase-2--collecte--audit-des-données)
+- [Phase 3 — Exploration & analyse statistique](#phase-3--exploration--analyse-statistique)
+- [Phase 4 — Modélisation prédictive & interprétabilité](#phase-4--modélisation-prédictive--interprétabilité)
 
 ---
 
@@ -37,20 +39,24 @@ rétention.
 ```
 dddm-ecommerce-churn/
 ├── data/
-│   ├── raw/                          # données brutes (versionnées)
+│   ├── raw/                          # données brutes 
 │   │   ├── data.csv                  # Source 1 — Kaggle E-Commerce Data
 │   │   └── online_retail_II.xlsx     # Source 2 — UCI Online Retail II
-│   └── processed/                    # données nettoyées (générées, non versionnées)
-│       └── clean_transactions.csv
+│   └── processed/                    # données nettoyées 
+│       ├── clean_transactions.csv
+│       └── rfm_segmented.csv
 ├── notebooks/
-│   ├── 01_problem_definition.ipynb   # Phase 1
-│   └── 02_data_audit.ipynb           # Phase 2
+│   ├── 01_problem_definition.ipynb        # Phase 1
+│   ├── 02_data_audit.ipynb                # Phase 2
+│   ├── 03_eda_statistical_analysis.ipynb  # Phase 3
+│   └── 04_modeling_interpretability.ipynb # Phase 4
 ├── src/
 │   └── preprocessing.py              # chargement, audit, nettoyage, enrichissement
+├── models/                           # modèle entraîné, scaler, liste de variables
 ├── dashboard/
 │   └── app.py                        # dashboard Streamlit
 ├── images/                           # figures produites par les notebooks
-├── reports/                          # livrables (A/B test plan, slides…)
+├── reports/                          # livrables 
 ├── requirements.txt
 └── README.md
 ```
@@ -103,3 +109,26 @@ période commune 2010-2011). Après nettoyage et enrichissement géographique
 est consolidé dans `data/processed/clean_transactions.csv`.
 
 Notebook : `notebooks/02_data_audit.ipynb` · Code : `src/preprocessing.py`
+
+## Phase 3 — Exploration & analyse statistique
+
+Construction de la table RFM (Récence, Fréquence, Montant) par client et définition
+de la cible churn (inactivité > 90 jours). Analyse exploratoire complète :
+distributions et asymétries, détection et traitement des valeurs aberrantes
+(winsorisation), corrélations, tests statistiques (t-test, chi-deux, Mann-Whitney) et
+segmentation par clustering K-Means. La table segmentée est sauvegardée dans
+`data/processed/rfm_segmented.csv`.
+
+Notebook : `notebooks/03_eda_statistical_analysis.ipynb`
+
+## Phase 4 — Modélisation prédictive & interprétabilité
+
+Entraînement et comparaison de trois modèles de classification (régression
+logistique, Random Forest, XGBoost) pour prédire le churn à partir du comportement
+d'achat. La récence, qui définit mécaniquement la cible, est exclue des variables
+explicatives pour éviter toute fuite de données. Après validation croisée et réglage
+des hyperparamètres, XGBoost atteint une AUC-ROC d'environ 0,87. L'interprétabilité
+est assurée par les valeurs SHAP (importance globale et explication locale). Le modèle
+final est sérialisé dans `models/`.
+
+Notebook : `notebooks/04_modeling_interpretability.ipynb`
