@@ -91,9 +91,29 @@ def get_model_bundle():
 
 def clear_caches():
     get_model_bundle.clear()
+    score_full_base.clear()
     load_rfm.clear()
     load_meta.clear()
     load_monthly.clear()
     load_top_products.clear()
     load_country.clear()
     load_seasonality.clear()
+
+
+@st.cache_data(show_spinner=False)
+def score_full_base() -> pd.DataFrame:
+    """RFM table augmented with the model's churn probability + risk level.
+
+    Computed once per session and shared by every page that needs a scored
+    customer base (Direction, Marketing, Operations). The cache invalidates
+    automatically when ``clear_caches()`` runs after a regen.
+    """
+    bundle = get_model_bundle()
+    df = load_rfm().copy()
+    proba = bundle.model.predict_proba(df[cfg.MODEL_FEATURES].values)[:, 1]
+    df["Churn_Probability"] = proba
+    df["Risk_Level"] = pd.cut(
+        proba, bins=[-0.01, 0.33, 0.66, 1.01],
+        labels=["Faible", "Modéré", "Élevé"],
+    )
+    return df

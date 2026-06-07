@@ -232,31 +232,32 @@ if run:
 # --------------------------------------------------------------------------- #
 # Module navigation
 # --------------------------------------------------------------------------- #
-ui.section("Six modules, un fil conducteur",
-           "Du jeu de données aux décisions de rétention.")
+ui.section("Cinq vues, trois profils, deux outils",
+           "Chaque vue est pensée pour un rôle. Les outils de scoring servent tout le monde.")
 
-modules = [
-    ("01", "Données",
-     "Sources combinées, schéma, volumétrie, table RFM client."),
-    ("02", "Qualité",
-     "Audit complétude, doublons cross-source, biais géographique."),
-    ("03", "Segments & EDA",
-     "Distributions, corrélations, tests Mann-Whitney, K-Means."),
-    ("04", "Scoring client",
-     "Score un client à partir de son comportement (RFM)."),
-    ("05", "Scoring par lot",
-     "Importez un CSV, récupérez les probabilités et niveaux de risque."),
-    ("06", "Performance",
-     "Métriques hold-out, ROC, importance des variables, SHAP."),
+profiles = [
+    ("01", "Vue Direction",
+     "KPIs exécutifs, activité dans le temps, simulateur ROI, leviers prioritaires."),
+    ("02", "Vue Marketing",
+     "Liste actionnable des clients à risque, cartographie, top produits, saisonnalité."),
+    ("03", "Vue Opérations",
+     "Pipeline, qualité, distributions & tests, performance modèle (en quatre onglets)."),
 ]
-
-row1 = st.columns(3)
-for col, (n, t, d) in zip(row1, modules[:3]):
+prow = st.columns(3)
+for col, (n, t, d) in zip(prow, profiles):
     with col:
         ui.feature_tile(n, t, d)
 
-row2 = st.columns(3)
-for col, (n, t, d) in zip(row2, modules[3:]):
+st.markdown("&nbsp;", unsafe_allow_html=True)
+
+tools = [
+    ("04", "Scoring client",
+     "Saisir un profil RFM, obtenir le score immédiatement."),
+    ("05", "Scoring par lot",
+     "Importer un CSV, exporter probabilités et niveaux de risque."),
+]
+trow = st.columns(2)
+for col, (n, t, d) in zip(trow, tools):
     with col:
         ui.feature_tile(n, t, d)
 

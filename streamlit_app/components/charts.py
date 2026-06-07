@@ -220,3 +220,128 @@ def proba_distribution(probas: np.ndarray, threshold: float = 0.5) -> go.Figure:
                    xaxis=dict(title="Probabilité"),
                    yaxis=dict(title="Clients"),
                    showlegend=False, bargap=0.05)
+
+
+# --------------------------------------------------------------------------- #
+# Advanced model evaluation
+# --------------------------------------------------------------------------- #
+def calibration_plot(y_true: np.ndarray, y_proba: np.ndarray,
+                     n_bins: int = 10) -> go.Figure:
+    """Reliability diagram: do the predicted probabilities mean what they claim?
+
+    A well-calibrated model has a curve close to the y = x diagonal.
+    """
+    df = pd.DataFrame({"y": y_true, "p": y_proba})
+    df["bin"] = pd.qcut(df["p"], q=n_bins, duplicates="drop")
+    g = df.groupby("bin", observed=True).agg(
+        mean_p=("p", "mean"),
+        true_rate=("y", "mean"),
+        n=("y", "count"),
+    ).reset_index(drop=True)
+
+    fig = go.Figure()
+    # Diagonal reference (perfect calibration)
+    fig.add_trace(go.Scatter(
+        x=[0, 1], y=[0, 1], mode="lines", showlegend=False,
+        line=dict(color=cfg.COLORS["faint"], dash="dot", width=1.5),
+    ))
+    # Model curve
+    fig.add_trace(go.Scatter(
+        x=g["mean_p"], y=g["true_rate"],
+        mode="lines+markers", name="Modèle",
+        line=dict(color=cfg.COLORS["accent_2"], width=2.5),
+        marker=dict(size=10, color=cfg.COLORS["accent"],
+                    line=dict(color=cfg.COLORS["accent_2"], width=1.5)),
+        hovertemplate=(
+            "Proba prédite ≈ %{x:.2f}<br>"
+            "Taux churn observé : %{y:.1%}<extra></extra>"
+        ),
+    ))
+    return _style(fig,
+                   title=dict(text="Calibration des probabilités"),
+                   xaxis=dict(title="Probabilité prédite (moyenne par décile)",
+                              gridcolor=cfg.COLORS["border"], range=[0, 1]),
+                   yaxis=dict(title="Taux de churn observé",
+                              gridcolor=cfg.COLORS["border"], range=[0, 1]),
+                   showlegend=False)
+
+
+def lift_curve(y_true: np.ndarray, y_proba: np.ndarray) -> go.Figure:
+    """Cumulative gain / lift : on attaque la base par les scores décroissants ;
+    quel pourcentage du churn a-t-on capturé après X % de la base ?"""
+    order = np.argsort(-y_proba)  # descending
+    y_sorted = np.asarray(y_true)[order]
+    cum_pos = np.cumsum(y_sorted)
+    total_pos = max(cum_pos[-1], 1)
+    pct_base = np.arange(1, len(y_sorted) + 1) / len(y_sorted)
+    pct_captured = cum_pos / total_pos
+
+    fig = go.Figure()
+    # Random baseline
+    fig.add_trace(go.Scatter(
+        x=[0, 1], y=[0, 1], mode="lines", name="Hasard",
+        line=dict(color=cfg.COLORS["faint"], dash="dot", width=1.5),
+    ))
+    # Model curve
+    fig.add_trace(go.Scatter(
+        x=pct_base, y=pct_captured, mode="lines", name="Modèle",
+        line=dict(color=cfg.COLORS["accent_2"], width=2.5),
+        fill="tozeroy", fillcolor="rgba(174,198,207,0.20)",
+        hovertemplate=(
+            "Top %{x:.0%} de la base<br>"
+            "→ %{y:.0%} du churn capturé<extra></extra>"
+        ),
+    ))
+    return _style(fig,
+                   title=dict(text="Courbe de gain cumulé"),
+                   xaxis=dict(title="Part de la base contactée",
+                              gridcolor=cfg.COLORS["border"], range=[0, 1],
+                              tickformat=".0%"),
+                   yaxis=dict(title="Part du churn capturé",
+                              gridcolor=cfg.COLORS["border"], range=[0, 1.02],
+                              tickformat=".0%"),
+                   legend=dict(x=0.55, y=0.08))
+
+
+def decile_risk_bar(df: pd.DataFrame, prob_col: str = "Churn_Probability",
+                    monetary_col: str = "Monetary") -> go.Figure:
+    """Décile de probabilité × CA exposé : où se concentre la valeur à risque."""
+    work = df.copy()
+    work["decile"] = pd.qcut(work[prob_col], 10, labels=False, duplicates="drop")
+    g = work.groupby("decile", observed=True).agg(
+        clients=(prob_col, "count"),
+        ca_total=(monetary_col, "sum"),
+        proba_avg=(prob_col, "mean"),
+    ).reset_index()
+    # Convert decile to "top X%" labels (decile 9 = top 10% riskiest)
+    g["label"] = g["decile"].apply(lambda d: f"Top {(10 - d)*10}–{(10 - d - 1)*10}%")
+    g = g.sort_values("decile", ascending=False)
+
+    fig = go.Figure(go.Bar(
+        x=g["label"], y=g["ca_total"],
+        marker=dict(
+            color=g["proba_avg"],
+            colorscale=[
+                [0, cfg.COLORS["pastel_green"]],
+                [0.5, cfg.COLORS["pastel_peach"]],
+                [1, cfg.COLORS["pastel_coral"]],
+            ],
+            showscale=False,
+            line=dict(width=0),
+        ),
+        text=[f"{v/1000:.0f}K" for v in g["ca_total"]],
+        textposition="outside",
+        textfont=dict(color=cfg.COLORS["ink"], size=11),
+        hovertemplate=(
+            "%{x}<br>Clients : %{customdata[0]:,.0f}"
+            "<br>Proba moyenne : %{customdata[1]:.1%}"
+            "<br>CA cumulé : %{y:,.0f}<extra></extra>"
+        ),
+        customdata=g[["clients", "proba_avg"]].values,
+    ))
+    return _style(fig,
+                   title=dict(text="Concentration du CA par décile de risque"),
+                   xaxis=dict(title="", gridcolor=cfg.COLORS["border"]),
+                   yaxis=dict(title="CA cumulé",
+                              gridcolor=cfg.COLORS["border"]),
+                   showlegend=False, bargap=0.35)
