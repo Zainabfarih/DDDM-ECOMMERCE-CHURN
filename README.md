@@ -17,6 +17,7 @@ site e-commerce et orienter les actions de rétention.
 - [Phase 2 — Collecte & audit des données](#phase-2--collecte--audit-des-données)
 - [Phase 3 — Exploration & analyse statistique](#phase-3--exploration--analyse-statistique)
 - [Phase 4 — Modélisation prédictive & interprétabilité](#phase-4--modélisation-prédictive--interprétabilité)
+- [Phase 6 — Décision, A/B testing & mesure d'impact](#phase-6--décision-ab-testing--mesure-dimpact)
 
 ---
 
@@ -50,13 +51,14 @@ dddm-ecommerce-churn/
 │   ├── 02_data_audit.ipynb                # Phase 2
 │   ├── 03_eda_statistical_analysis.ipynb  # Phase 3
 │   └── 04_modeling_interpretability.ipynb # Phase 4
+│   └── 05_decision_ab_test.ipynb          # Phase 6
 ├── src/
 │   └── preprocessing.py              # chargement, audit, nettoyage, enrichissement
 ├── models/                           # modèle entraîné, scaler, liste de variables
 ├── dashboard/
 │   └── app.py                        # dashboard Streamlit
 ├── images/                           # figures produites par les notebooks
-├── reports/                          # livrables 
+├── reports/                          # livrables (ex: ab_test_plan.md)
 ├── requirements.txt
 └── README.md
 ```
@@ -132,3 +134,14 @@ est assurée par les valeurs SHAP (importance globale et explication locale). Le
 final est sérialisé dans `models/`.
 
 Notebook : `notebooks/04_modeling_interpretability.ipynb`
+
+## Phase 6 — Décision, A/B testing & mesure d'impact
+
+Formulation de trois recommandations actionnables hiérarchisées à partir des segments
+et du modèle de churn (réactivation des clients à risque, fidélisation des clients à
+forte valeur, alerte de désengagement), avec justification quantitative et estimation
+de l'impact financier. La recommandation prioritaire fait l'objet d'un plan d'A/B test
+complet (hypothèses, taille d'échantillon, durée, métriques) et d'une simulation de
+résultat. Un jeu de métriques de suivi post-décision est défini.
+
+Notebook : `notebooks/05_decision_ab_test.ipynb` · Plan détaillé : `reports/ab_test_plan.md`
