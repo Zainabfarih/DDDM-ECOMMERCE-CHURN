@@ -1,0 +1,22 @@
+# Streamlit theme — kept minimal so the custom CSS in
+# streamlit_app/assets/styles.css owns the visual identity.
+# This file just sets sane defaults + brand-aligned base colors.
+
+[theme]
+base = "light"
+primaryColor = "#1f3a5f"
+backgroundColor = "#fafaf7"
+secondaryBackgroundColor = "#ffffff"
+textColor = "#0f172a"
+font = "sans serif"
+
+[browser]
+gatherUsageStats = false
+
+[server]
+headless = false
+runOnSave = true
+
+[client]
+showSidebarNavigation = true
+toolbarMode = "viewer"
