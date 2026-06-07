@@ -16,9 +16,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-# --------------------------------------------------------------------------- #
-# Chemins & constantes
-# --------------------------------------------------------------------------- #
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -60,9 +57,6 @@ COUNTRY_MAPPING = {
 }
 
 
-# --------------------------------------------------------------------------- #
-# Chargement
-# --------------------------------------------------------------------------- #
 def load_kaggle(path: str = KAGGLE_CSV) -> pd.DataFrame:
     """Charge la source Kaggle et l'aligne sur le schéma commun."""
     df = pd.read_csv(_resolve(path), encoding="ISO-8859-1")
@@ -96,9 +90,6 @@ def load_raw() -> pd.DataFrame:
     return pd.concat([kaggle, uci], ignore_index=True)
 
 
-# --------------------------------------------------------------------------- #
-# Audit
-# --------------------------------------------------------------------------- #
 def audit_report(df: pd.DataFrame) -> pd.DataFrame:
     """Type, taux de valeurs manquantes, cardinalité et exemple par colonne."""
     rows = []
@@ -137,9 +128,6 @@ def quality_flags(df: pd.DataFrame) -> dict:
     }
 
 
-# --------------------------------------------------------------------------- #
-# Nettoyage
-# --------------------------------------------------------------------------- #
 def clean_transactions(df: pd.DataFrame) -> pd.DataFrame:
     """Supprime doublons, annulations, lignes sans client et valeurs non
     positives, puis crée la variable TotalPrice."""
@@ -155,9 +143,6 @@ def clean_transactions(df: pd.DataFrame) -> pd.DataFrame:
     return clean.reset_index(drop=True)
 
 
-# --------------------------------------------------------------------------- #
-# Enrichissement
-# --------------------------------------------------------------------------- #
 def fetch_country_reference(url: str = COUNTRIES_API) -> pd.DataFrame:
     """Récupère région, sous-région, population et coordonnées par pays."""
     with urllib.request.urlopen(url, timeout=30) as resp:
@@ -188,9 +173,6 @@ def enrich(clean: pd.DataFrame, countries: pd.DataFrame) -> pd.DataFrame:
     return out.drop(columns=["CountryAPI"])
 
 
-# --------------------------------------------------------------------------- #
-# Pipeline complet
-# --------------------------------------------------------------------------- #
 def build_processed_dataset(
     out_path: str = "data/processed/clean_transactions.csv",
 ) -> pd.DataFrame:
