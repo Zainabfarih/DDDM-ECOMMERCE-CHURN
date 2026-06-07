@@ -20,6 +20,7 @@ site e-commerce et orienter les actions de rétention.
 - [Phase 3 — Exploration & analyse statistique](#phase-3--exploration--analyse-statistique)
 - [Phase 4 — Modélisation prédictive & interprétabilité](#phase-4--modélisation-prédictive--interprétabilité)
 - [Phase 5 — Dashboard interactif](#phase-5--dashboard-interactif)
+- [Phase 6 — Décision, A/B testing & mesure d'impact](#phase-6--décision-ab-testing--mesure-dimpact)
 - [Reproductibilité](#reproductibilité)
 
 ---
@@ -58,11 +59,12 @@ dddm-ecommerce-churn/
 │       ├── clean_transactions.csv        # ~190 MB, regénérée par le pipeline
 │       └── rfm_segmented.csv             # Table RFM par client + label Churn
 │
-├── notebooks/                            # Notebooks Jupyter (phases 1 à 4)
+├── notebooks/                            # Notebooks Jupyter (phases 1 à 4, 6)
 │   ├── 01_problem_definition.ipynb
 │   ├── 02_data_audit.ipynb
 │   ├── 03_eda_statistical_analysis.ipynb
-│   └── 04_modeling_interpretability.ipynb
+│   ├── 04_modeling_interpretability.ipynb
+│   └── 06_decision_ab_test.ipynb
 │
 ├── src/
 │   └── preprocessing.py                  # Chargement, audit, nettoyage
@@ -278,6 +280,20 @@ proba    = XGBoost.predict_proba(features)[:, 1]
 Tous les graphiques utilisent la palette pastel du notebook EDA, le pipeline
 de prédiction est strictement identique à celui du notebook 04, et les
 résultats sont persistés en `session_state` pour survivre aux interactions.
+
+---
+
+## Phase 6 — Décision, A/B testing & mesure d'impact
+
+Formulation de trois recommandations actionnables hiérarchisées à partir des
+segments et du modèle de churn (réactivation des clients à risque, fidélisation
+des clients à forte valeur, alerte de désengagement), avec justification
+quantitative et estimation de l'impact financier (en livres sterling, devise du
+dataset). La recommandation prioritaire fait l'objet d'un plan d'A/B test complet
+(hypothèses, taille d'échantillon, durée, métriques) et d'une simulation de
+résultat. Un jeu de métriques de suivi post-décision est défini.
+
+Notebook : `notebooks/06_decision_ab_test.ipynb` · Plan détaillé : `reports/ab_test_plan.md`
 
 ---
 
